@@ -1,0 +1,53 @@
+from textnode import TextNode, TextType
+from htmlnode import HTMLNode, ParentNode, LeafNode
+
+def main():
+
+    print(TextNode("Random Stuff", TextType.LINK, "https://www.amigaforever.com"))
+
+def text_node_to_html_node(text_node):
+
+    value = text_node.text
+    props = None
+    if text_node.text_type == TextType.TEXT:
+        tag = None
+    if text_node.text_type == TextType.BOLD:
+        tag = "b"
+    if text_node.text_type == TextType.ITALIC:
+        tag = "i"
+    if text_node.text_type == TextType.CODE:
+        tag = "code"
+    if text_node.text_type == TextType.LINK:
+        tag = "a"
+        props = {"href": text_node.url}
+    if text_node.text_type == TextType.IMAGE:
+        tag = "img"
+        value = ""
+        props = {"src": text_node.url, "alt": text_node.text}
+    if text_node.text_type not in TextType:
+        raise Exception("Invalid text type.")
+   
+    return LeafNode(tag, value, props)
+
+def split_nodes_delimiter(old_nodes, delimiter, text_type):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text_type is not TextType.TEXT:
+            new_nodes.append(node)
+        else:
+            count = node.text.count(delimiter)
+            if count % 2 > 0:
+                raise Exception(f"Missing closing {delimiter}")
+            parts = node.text.split(delimiter)
+            for i, part in enumerate(parts):
+                if part == "":
+                    continue
+                if i % 2 == 0:
+                    new_nodes.append(TextNode(part, TextType.TEXT))
+                else:
+                    new_nodes.append(TextNode(part, text_type))
+    return new_nodes
+            
+
+if __name__ == "__main__":
+    main()
