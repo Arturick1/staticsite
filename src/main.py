@@ -1,5 +1,6 @@
 from textnode import TextNode, TextType
 from htmlnode import HTMLNode, ParentNode, LeafNode
+from markdownfuncs import extract_markdown_images, extract_markdown_links
 
 def main():
 
@@ -48,6 +49,28 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
                     new_nodes.append(TextNode(part, text_type))
     return new_nodes
             
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if node.text == "":
+            continue
+        elif node.text_type is not TextType.TEXT:
+            new_nodes.append(node)
+        else:
+            remaining_text = node.text
+            image_tuples = extract_markdown_images(remaining_text)
+            if len(image_tuples) == 0:
+                new_nodes.append(node)
+                continue
+            for tuple in image_tuples:
+                sections = remaining_text.split(f"![{tuple[0]}]({tuple[1]})", 1)
+                if sections[0] != "":
+                    new_nodes.append(TextNode(sections[0], TextType.TEXT))
+                new_nodes.append(TextNode(tuple[0], TextType.IMAGE, tuple[1]))
+                remaining_text = sections[1]
+            if remaining_text != "":
+                new_nodes.append(TextNode(remaining_text, TextType.TEXT))
+    return new_nodes
 
 if __name__ == "__main__":
     main()
